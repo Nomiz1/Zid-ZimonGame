@@ -2139,7 +2139,9 @@ MonoBehaviour:
   enableMouseLook: 1
   mouseSensitivity: 1
   invertY: 0
-  thirdPersonOffset: {x: 0, y: 2, z: -5}
+  xAxisOffset: 0
+  yAxisOffset: 2
+  zAxisOffset: -10
   useThirdPerson: 1
   walkSpeed: 6
   runSpeed: 12

@@ -15,10 +15,13 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Invert Y axis for mouse look.")]
     public bool invertY = false;
     [Tooltip("Offset från spelaren till kameran i tredje person (bakåt och uppåt).")]
-    public Vector3 thirdPersonOffset = new Vector3(0f, 2f, -5f);
-    [Tooltip("Om true används tredje person, annars första person.")]
+    public float xAxisOffset = 0f;
+    [Tooltip("Offset från spelaren till kameran i tredje person (höger och vänster).")]
+    public float yAxisOffset = 2f;
+    public float zAxisOffset = -5f;
+    public Vector3 thirdPersonOffset => new Vector3(xAxisOffset, yAxisOffset, zAxisOffset);
     public bool useThirdPerson = true;
-    [Tooltip("If true, apply vertical look (pitch) to the player transform instead of only the camera.")]
+    [Tooltip("Om true används tredje person")]
     public float walkSpeed = 6f;
     public float runSpeed = 12f;
     public float jumpPower = 3f;
