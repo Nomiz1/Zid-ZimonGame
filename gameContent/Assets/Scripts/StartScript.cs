@@ -14,8 +14,10 @@ public class PlayerMovement : MonoBehaviour
     public float mouseSensitivity = 0.05f;
     [Tooltip("Invert Y axis for mouse look.")]
     public bool invertY = false;
-    [Tooltip("Local offset of the camera relative to the player (x,y,z).")]
-    public Vector3 cameraOffset = new Vector3(0f, 1f, 0f);
+    [Tooltip("Offset från spelaren till kameran i tredje person (bakåt och uppåt).")]
+    public Vector3 thirdPersonOffset = new Vector3(0f, 2f, -5f);
+    [Tooltip("Om true används tredje person, annars första person.")]
+    public bool useThirdPerson = true;
     [Tooltip("If true, apply vertical look (pitch) to the player transform instead of only the camera.")]
     public float walkSpeed = 6f;
     public float runSpeed = 12f;
@@ -38,14 +40,13 @@ public class PlayerMovement : MonoBehaviour
         characterController = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        // Ensure the camera is a child of the player and locked to the player's local position
-        if (playerCamera != null)
+        // Första person: gör kameran till barn och placera vid huvud. Tredje person: positioneras i Update.
+        if (playerCamera != null && !useThirdPerson)
         {
             if (playerCamera.transform.parent != transform)
                 playerCamera.transform.SetParent(transform);
             playerCamera.transform.localRotation = Quaternion.identity;
-            // Use configurable offset; default keeps camera at roughly eye level
-            playerCamera.transform.localPosition = cameraOffset != Vector3.zero ? cameraOffset : new Vector3(0f, defaultHeight * 0.5f, 0f);
+            playerCamera.transform.localPosition = new Vector3(0f, defaultHeight * 0.5f, 0f);
         }
     }
 
@@ -82,16 +83,12 @@ public class PlayerMovement : MonoBehaviour
             characterController.height = crouchHeight;
             walkSpeed = crouchSpeed;
             runSpeed = crouchSpeed;
-            if (playerCamera != null)
-                playerCamera.transform.localPosition = new Vector3(0f, crouchHeight * 0.5f, 0f);
         }
         else
         {
             characterController.height = defaultHeight;
             walkSpeed = 12f;
             runSpeed = 12f;
-            if (playerCamera != null)
-                playerCamera.transform.localPosition = new Vector3(0f, defaultHeight * 0.5f, 0f);
         }
 
         characterController.Move(moveDirection * Time.deltaTime);
@@ -103,19 +100,19 @@ public class PlayerMovement : MonoBehaviour
             float yDelta = mouseDelta.y * mouseSensitivity * ySign * lookSpeed;
             float xDelta = mouseDelta.x * mouseSensitivity * lookSpeed;
 
-            if (playerCamera == null)
+            if (useThirdPerson && playerCamera != null)
             {
-                rotationX += yDelta;
-                rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-                transform.rotation *= Quaternion.Euler(-yDelta, xDelta, 0);
-            }
-            else
-            {
-                rotationX += yDelta;
-                rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-                if (playerCamera != null)
-                    playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+                // Rotera spelaren i Y-led (vänster/höger) med musen
                 transform.rotation *= Quaternion.Euler(0, xDelta, 0);
+                // Justera kamerans vinkel (upp/ner) med musen
+                rotationX += yDelta;
+                rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
+
+                // Beräkna önskad position bakom spelaren
+                Quaternion camRot = Quaternion.Euler(rotationX, transform.eulerAngles.y, 0);
+                Vector3 desiredPos = transform.position + camRot * thirdPersonOffset;
+                playerCamera.transform.position = desiredPos;
+                playerCamera.transform.LookAt(transform.position + Vector3.up * 1.5f);
             }
         }
     }
