@@ -2140,12 +2140,11 @@ MonoBehaviour:
   mouseSensitivity: 1
   invertY: 0
   cameraOffset: {x: 0, y: 1, z: 0}
-  pitchPlayer: 0
   walkSpeed: 6
-  runSpeed: 9
-  jumpPower: 10
-  gravity: 35
-  lookSpeed: 2
+  runSpeed: 12
+  jumpPower: 7
+  gravity: 10
+  lookSpeed: 0.5
   lookXLimit: 45
   defaultHeight: 2
   crouchHeight: 1
