@@ -17,7 +17,6 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("Local offset of the camera relative to the player (x,y,z).")]
     public Vector3 cameraOffset = new Vector3(0f, 1f, 0f);
     [Tooltip("If true, apply vertical look (pitch) to the player transform instead of only the camera.")]
-    public bool pitchPlayer = false;
     public float walkSpeed = 6f;
     public float runSpeed = 12f;
     public float jumpPower = 3f;
@@ -104,17 +103,11 @@ public class PlayerMovement : MonoBehaviour
             float yDelta = mouseDelta.y * mouseSensitivity * ySign * lookSpeed;
             float xDelta = mouseDelta.x * mouseSensitivity * lookSpeed;
 
-            if (pitchPlayer)
+            if (playerCamera == null)
             {
-                // Apply yaw first
-                transform.rotation *= Quaternion.Euler(0, xDelta, 0);
-                // Apply pitch to the player transform
                 rotationX += yDelta;
                 rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-                float yaw = transform.eulerAngles.y;
-                transform.rotation = Quaternion.Euler(rotationX, yaw, 0);
-                if (playerCamera != null)
-                    playerCamera.transform.localRotation = Quaternion.identity;
+                transform.rotation *= Quaternion.Euler(-yDelta, xDelta, 0);
             }
             else
             {
