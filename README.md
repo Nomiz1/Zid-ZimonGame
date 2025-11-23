@@ -28,3 +28,5 @@ Vid frågor eller idéer, prata med din bror!
 
 ---
 Låt oss skapa något grymt tillsammans!
+
+Detta är coolt!
