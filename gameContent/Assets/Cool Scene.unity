@@ -2141,7 +2141,7 @@ MonoBehaviour:
   invertY: 0
   xAxisOffset: 0
   yAxisOffset: 2
-  zAxisOffset: -10
+  zAxisOffset: -5
   useThirdPerson: 1
   walkSpeed: 6
   runSpeed: 12
