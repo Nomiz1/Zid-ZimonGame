@@ -9,17 +9,11 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     public Camera playerCamera;
-    public bool enableMouseLook = true;
-    [Tooltip("Multiplier for mouse look sensitivity. Increase to look faster.")]
-    public float mouseSensitivity = 0.05f;
-    [Tooltip("Invert Y axis for mouse look.")]
-    public bool invertY = false;
-    [Tooltip("Offset från spelaren till kameran i tredje person (bakåt och uppåt).")]
     public float xAxisOffset = 0f;
     [Tooltip("Offset från spelaren till kameran i tredje person (höger och vänster).")]
     public float yAxisOffset = 2f;
     public float zAxisOffset = -5f;
-    public Vector3 thirdPersonOffset => new Vector3(xAxisOffset, yAxisOffset, zAxisOffset);
+    // Offset beräknas dynamiskt i Update
     public bool useThirdPerson = true;
     [Tooltip("Om true används tredje person")]
     public float walkSpeed = 6f;
@@ -33,7 +27,7 @@ public class PlayerMovement : MonoBehaviour
     public float crouchSpeed = 3f;
 
     private Vector3 moveDirection = Vector3.zero;
-    private float rotationX = 0;
+    // Ingen rotationX behövs när musrörelse är avstängd
     private CharacterController characterController;
 
     private bool canMove = true;
@@ -55,32 +49,22 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        Vector3 forward = transform.TransformDirection(Vector3.forward);
-        Vector3 right = transform.TransformDirection(Vector3.right);
-
+        // WASD-rörelse
+        Vector3 forward = transform.forward;
+        Vector3 right = transform.right;
         bool isRunning = GetRunInput();
         float vertical = GetVerticalAxis();
         float horizontal = GetHorizontalAxis();
-
         float curSpeedX = canMove ? (isRunning ? runSpeed : walkSpeed) * vertical : 0;
         float curSpeedY = canMove ? (isRunning ? runSpeed : walkSpeed) * horizontal : 0;
         float movementDirectionY = moveDirection.y;
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
-
-        if (GetJumpInput() && canMove && characterController.isGrounded)
-        {
-            moveDirection.y = jumpPower;
-        }
-        else
-        {
-            moveDirection.y = movementDirectionY;
-        }
-
+        // Hopp är inaktiverat
+        moveDirection.y = movementDirectionY;
         if (!characterController.isGrounded)
         {
             moveDirection.y -= gravity * Time.deltaTime;
         }
-
         if (GetCrouchInput() && canMove)
         {
             characterController.height = crouchHeight;
@@ -93,30 +77,15 @@ public class PlayerMovement : MonoBehaviour
             walkSpeed = 12f;
             runSpeed = 12f;
         }
-
         characterController.Move(moveDirection * Time.deltaTime);
 
-        if (canMove && enableMouseLook)
+        // Kameran följer efter spelaren
+        if (useThirdPerson && playerCamera != null)
         {
-            Vector2 mouseDelta = GetMouseDelta();
-            float ySign = invertY ? 1f : -1f;
-            float yDelta = mouseDelta.y * mouseSensitivity * ySign * lookSpeed;
-            float xDelta = mouseDelta.x * mouseSensitivity * lookSpeed;
-
-            if (useThirdPerson && playerCamera != null)
-            {
-                // Rotera spelaren i Y-led (vänster/höger) med musen
-                transform.rotation *= Quaternion.Euler(0, xDelta, 0);
-                // Justera kamerans vinkel (upp/ner) med musen
-                rotationX += yDelta;
-                rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-
-                // Beräkna önskad position bakom spelaren
-                Quaternion camRot = Quaternion.Euler(rotationX, transform.eulerAngles.y, 0);
-                Vector3 desiredPos = transform.position + camRot * thirdPersonOffset;
-                playerCamera.transform.position = desiredPos;
-                playerCamera.transform.LookAt(transform.position + Vector3.up * 1.5f);
-            }
+            Vector3 thirdPersonOffset = new Vector3(xAxisOffset, yAxisOffset, zAxisOffset);
+            Vector3 desiredPos = transform.position + thirdPersonOffset;
+            playerCamera.transform.position = desiredPos;
+            playerCamera.transform.LookAt(transform.position + Vector3.up * 1.5f);
         }
     }
 
@@ -162,10 +131,7 @@ public class PlayerMovement : MonoBehaviour
 
     private bool GetJumpInput()
     {
-        if (Keyboard.current != null)
-            return Keyboard.current.spaceKey.isPressed;
-        if (Gamepad.current != null)
-            return Gamepad.current.buttonSouth.isPressed;
+        // Hopp är inaktiverat
         return false;
     }
 
@@ -188,7 +154,8 @@ public class PlayerMovement : MonoBehaviour
     private bool GetRunInput() => Input.GetKey(KeyCode.LeftShift);
     private float GetVerticalAxis() => Input.GetAxis("Vertical");
     private float GetHorizontalAxis() => Input.GetAxis("Horizontal");
-    private bool GetJumpInput() => Input.GetButton("Jump");
+    // Hopp är inaktiverat
+    private bool GetJumpInput() => false;
     private bool GetCrouchInput() => Input.GetKey(KeyCode.R);
     private Vector2 GetMouseDelta() => new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 #endif
