@@ -23,8 +23,6 @@ public class PlayerMovement : MonoBehaviour
     public float lookSpeed = 10f;
     public float lookXLimit = 45f;
     public float defaultHeight = 2f;
-    public float crouchHeight = 1f;
-    public float crouchSpeed = 3f;
 
     private Vector3 moveDirection = Vector3.zero;
     // Ingen rotationX behövs när musrörelse är avstängd
@@ -64,12 +62,6 @@ public class PlayerMovement : MonoBehaviour
         if (!characterController.isGrounded)
         {
             moveDirection.y -= gravity * Time.deltaTime;
-        }
-        if (GetCrouchInput() && canMove)
-        {
-            characterController.height = crouchHeight;
-            walkSpeed = crouchSpeed;
-            runSpeed = crouchSpeed;
         }
         else
         {
@@ -128,35 +120,10 @@ public class PlayerMovement : MonoBehaviour
         }
         return Mathf.Clamp(h, -1f, 1f);
     }
-
-    private bool GetJumpInput()
-    {
-        // Hopp är inaktiverat
-        return false;
-    }
-
-    private bool GetCrouchInput()
-    {
-        if (Keyboard.current != null)
-            return Keyboard.current.rKey.isPressed;
-        return false;
-    }
-
-    private Vector2 GetMouseDelta()
-    {
-        if (Mouse.current != null)
-        {
-            return Mouse.current.delta.ReadValue();
-        }
-        return Vector2.zero;
-    }
 #else
     private bool GetRunInput() => Input.GetKey(KeyCode.LeftShift);
     private float GetVerticalAxis() => Input.GetAxis("Vertical");
     private float GetHorizontalAxis() => Input.GetAxis("Horizontal");
     // Hopp är inaktiverat
-    private bool GetJumpInput() => false;
-    private bool GetCrouchInput() => Input.GetKey(KeyCode.R);
-    private Vector2 GetMouseDelta() => new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 #endif
 }
