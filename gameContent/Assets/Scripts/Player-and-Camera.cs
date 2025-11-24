@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
 using UnityEngine.InputSystem;
@@ -17,8 +16,7 @@ public class PlayerMovement : MonoBehaviour
     public bool useThirdPerson = true;
     [Tooltip("Om true används tredje person")]
     public float walkSpeed = 6f;
-    public float runSpeed = 12f;
-    public float jumpPower = 3f;
+    public float runSpeed = 12f; 
     public float gravity = 20f;
     public float lookSpeed = 10f;
     public float lookXLimit = 45f;
@@ -50,6 +48,15 @@ public class PlayerMovement : MonoBehaviour
         // WASD-rörelse
         Vector3 forward = transform.forward;
         Vector3 right = transform.right;
+        // Om main menu är aktiv, tillåt ingen rörelse
+        if (mainMenu.IsMainMenuActive)
+        {
+            canMove = false;
+        }
+        else
+        {
+            canMove = true;
+        }
         bool isRunning = GetRunInput();
         float vertical = GetVerticalAxis();
         float horizontal = GetHorizontalAxis();
