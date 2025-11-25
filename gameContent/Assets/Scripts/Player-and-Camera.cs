@@ -1,5 +1,7 @@
 
 using UnityEngine;
+using UnityEngine.AI;
+
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
 using UnityEngine.InputSystem;
 #endif
@@ -15,53 +17,59 @@ public class PlayerMovement : MonoBehaviour
     // Offset beräknas dynamiskt i Update
     public bool useThirdPerson = true;
     [Tooltip("Om true används tredje person")]
+    public bool useFirstPerson;
+    public bool canMove = true;
     public float walkSpeed = 6f;
-    public float runSpeed = 12f; 
     public float gravity = 20f;
-    public float lookSpeed = 10f;
-    public float lookXLimit = 45f;
     public float defaultHeight = 2f;
+    private float curSpeedX = 0f;
+    private float curSpeedY = 0f;
 
     private Vector3 moveDirection = Vector3.zero;
     // Ingen rotationX behövs när musrörelse är avstängd
     private CharacterController characterController;
-
-    private bool canMove = true;
 
     void Start()
     {
         characterController = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        // Första person: gör kameran till barn och placera vid huvud. Tredje person: positioneras i Update.
-        if (playerCamera != null && !useThirdPerson)
+        // Endast en vy kan vara aktiv
+        if (useFirstPerson) useThirdPerson = false;
+        if (useThirdPerson) useFirstPerson = false;
+
+        if (playerCamera != null)
         {
-            if (playerCamera.transform.parent != transform)
+            if (useFirstPerson)
+            {
                 playerCamera.transform.SetParent(transform);
-            playerCamera.transform.localRotation = Quaternion.identity;
-            playerCamera.transform.localPosition = new Vector3(0f, defaultHeight * 0.5f, 0f);
+                playerCamera.transform.localRotation = Quaternion.identity;
+                playerCamera.transform.localPosition = new Vector3(0f, defaultHeight * 0.5f, 0f);
+            }
+            // Tredje person: kameran positioneras i Update
         }
     }
 
     void Update()
     {
-        // WASD-rörelse
-        Vector3 forward = transform.forward;
-        Vector3 right = transform.right;
-        // Om main menu är aktiv, tillåt ingen rörelse
         if (mainMenu.IsMainMenuActive)
         {
-            canMove = false;
+            return; // Ingen rörelse när huvudmenyn är aktiv
+        }
+        Vector3 forward = transform.forward;
+        Vector3 right = transform.right;
+        float vertical = GetVerticalAxis();
+        float horizontal = GetHorizontalAxis();
+        if (!canMove)
+        {
+            curSpeedX = 0f;
+            curSpeedY = 0f;
         }
         else
         {
-            canMove = true;
+            curSpeedX = walkSpeed * vertical;
+            curSpeedY = walkSpeed * horizontal;
         }
-        bool isRunning = GetRunInput();
-        float vertical = GetVerticalAxis();
-        float horizontal = GetHorizontalAxis();
-        float curSpeedX = canMove ? (isRunning ? runSpeed : walkSpeed) * vertical : 0;
-        float curSpeedY = canMove ? (isRunning ? runSpeed : walkSpeed) * horizontal : 0;
         float movementDirectionY = moveDirection.y;
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
         // Hopp är inaktiverat
@@ -73,31 +81,30 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             characterController.height = defaultHeight;
-            walkSpeed = 12f;
-            runSpeed = 12f;
         }
         characterController.Move(moveDirection * Time.deltaTime);
 
         // Kameran följer efter spelaren
         if (useThirdPerson && playerCamera != null)
         {
+            playerCamera.transform.SetParent(null); // Frikoppla från spelaren
             Vector3 thirdPersonOffset = new Vector3(xAxisOffset, yAxisOffset, zAxisOffset);
             Vector3 desiredPos = transform.position + thirdPersonOffset;
             playerCamera.transform.position = desiredPos;
             playerCamera.transform.LookAt(transform.position + Vector3.up * 1.5f);
         }
+        else if (useFirstPerson && playerCamera != null)
+        {
+            // Se till att kameran är barn till spelaren och placerad rätt
+            if (playerCamera.transform.parent != transform)
+                playerCamera.transform.SetParent(transform);
+            playerCamera.transform.localPosition = new Vector3(0f, defaultHeight * 0.5f, 0f);
+            playerCamera.transform.localRotation = Quaternion.identity;
+        }
     }
 
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-    private bool GetRunInput()
-    {
-        if (Keyboard.current != null)
-            return Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed;
-        if (Gamepad.current != null)
-            return Gamepad.current.leftStickButton.isPressed;
-        return false;
-    }
-
+   
     private float GetVerticalAxis()
     {
         float v = 0f;
@@ -128,7 +135,6 @@ public class PlayerMovement : MonoBehaviour
         return Mathf.Clamp(h, -1f, 1f);
     }
 #else
-    private bool GetRunInput() => Input.GetKey(KeyCode.LeftShift);
     private float GetVerticalAxis() => Input.GetAxis("Vertical");
     private float GetHorizontalAxis() => Input.GetAxis("Horizontal");
     // Hopp är inaktiverat

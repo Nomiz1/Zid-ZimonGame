@@ -1562,11 +1562,10 @@ MonoBehaviour:
   yAxisOffset: 7
   zAxisOffset: -15
   useThirdPerson: 0
+  useFirstPerson: 0
+  canMove: 0
   walkSpeed: 6
-  runSpeed: 12
   gravity: 35
-  lookSpeed: 0.5
-  lookXLimit: 45
   defaultHeight: 2
 --- !u!143 &2070624133
 CharacterController:
@@ -1623,7 +1622,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::mainMenu
   playerCamera: {fileID: 67540834}
-  isMainMenu: 0
   canMove: 0
   gravityEnabled: 0
   defaultHeight: 2
