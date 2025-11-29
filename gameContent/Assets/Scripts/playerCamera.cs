@@ -1,4 +1,4 @@
-
+// ...existing code...
 using UnityEngine;
 
 public class playerCamera : MonoBehaviour
@@ -9,38 +9,33 @@ public class playerCamera : MonoBehaviour
     public float positionX = 0f;
     public float positionY = 2f;
     public float positionZ = 0f;
-    public bool useThirdPerson = false;
+    public bool useThirdPerson = true;
+    public bool useFirstPerson = false;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        if (!useThirdPerson)
+        // Kameran är alltid barn till spelaren
+        if (transform.parent == null) return;
+
+        if (useFirstPerson)
         {
-            transform.SetParent(transform.parent);
-            transform.localRotation = Quaternion.identity;
+            // Första person: placera kameran vid huvud (lokal position)
             transform.localPosition = new Vector3(positionX, positionY, positionZ);
+            transform.localRotation = Quaternion.identity;
         }
-        else
+        else if (useThirdPerson)
         {
-            transform.SetParent(transform.parent);
-            Vector3 cameraOffset = new Vector3(cameraoffsetX, cameraoffsetY, cameraoffsetZ);
-            transform.position = transform.parent.position + cameraOffset; // Positionera kameran med offset
-            transform.LookAt(transform.position, Vector3.up * 1.5f); // Rikta kameran mot spelaren
-            transform.localRotation = Quaternion.identity; // Nollställ rotationen
-            
+            // Tredje person: placera kameran med offset bakom spelaren (lokal position)
+            transform.localPosition = new Vector3(cameraoffsetX, cameraoffsetY, cameraoffsetZ);
+            // Titta på spelaren (valfritt, kan tas bort om du vill ha fri kamera)
+            transform.LookAt(transform.parent.position + Vector3.up);
         }
-
-       
-
-
     }
 }
+
+
+
+
 
 
 
