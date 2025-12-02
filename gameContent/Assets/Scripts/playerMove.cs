@@ -5,6 +5,10 @@ using UnityEngine;
 public class playerMove: MonoBehaviour 
 {
     public Vector3 playerPosition;
+    void playerPos()
+        {
+            playerPosition = new Vector3(positionX, positionY, positionZ);
+        }
     public float positionX = 0f;
     public float positionY = 0f;
     public float positionZ = 0f;
@@ -14,12 +18,16 @@ public class playerMove: MonoBehaviour
     private AudioSource audioSource;
     bool isMoving = false;
 
-
-
-    void Start() 
+    void Start()
     {
-        playerPosition = new Vector3(positionX, positionY, positionZ);
+        playerPos();
+
         transform.position = playerPosition; // Sätt initial position
+
+        Cursor.visible = false;
+
+        Cursor.lockState = CursorLockMode.Locked;
+
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();
