@@ -251,7 +251,7 @@ Transform:
   m_GameObject: {fileID: 67540831}
   serializedVersion: 2
   m_LocalRotation: {x: 0.19025029, y: 0, z: 0, w: 0.98173565}
-  m_LocalPosition: {x: 0, y: 19.174, z: -33.989998}
+  m_LocalPosition: {x: 0, y: 16.463999, z: -33.989998}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -321,10 +321,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::playerMove
   startPositionX: 0
-  startPositionY: 3
+  startPositionY: 10
   startPositionZ: 0
   moveSpeed: 40
+  sprintSpeed: 80
+  isSprinting: 0
   canMove: 1
+  gravity: -120
+  jumpForce: 50
   moveSound: {fileID: 8300000, guid: 9923497065176453b8c461bfc100cb7d, type: 3}
 --- !u!212 &535107428
 SpriteRenderer:
@@ -393,7 +397,7 @@ Transform:
   m_GameObject: {fileID: 535107426}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.71, z: 3.01}
+  m_LocalPosition: {x: 0, y: 0, z: 3.01}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -503,8 +507,8 @@ GameObject:
   - component: {fileID: 1168086321}
   - component: {fileID: 1168086320}
   - component: {fileID: 1168086319}
-  m_Layer: 0
-  m_Name: Plane
+  m_Layer: 8
+  m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -596,13 +600,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1168086318}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0046222233, y: 0.005461984, z: -0.0049975817, w: 0.9999619}
-  m_LocalPosition: {x: 0.7564, y: -1.97, z: -0.3675}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -4.64, z: 0}
   m_LocalScale: {x: 29.417, y: 1, z: 33.118}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1669448507}
-  m_LocalEulerAnglesHint: {x: -0.527, y: 0.629, z: -0.576}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1194204484
 GameObject:
   m_ObjectHideFlags: 0
@@ -1015,7 +1019,7 @@ Transform:
   m_GameObject: {fileID: 1686429624}
   serializedVersion: 2
   m_LocalRotation: {x: 0.19025029, y: 0, z: 0, w: 0.98173565}
-  m_LocalPosition: {x: 0, y: 19.174, z: -33.989998}
+  m_LocalPosition: {x: 0, y: 16.463999, z: -33.989998}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

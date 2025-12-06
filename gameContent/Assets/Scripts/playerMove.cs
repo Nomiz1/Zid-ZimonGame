@@ -3,7 +3,6 @@
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
 
 public class PlayerMove : MonoBehaviour
 {
@@ -14,13 +13,18 @@ public class PlayerMove : MonoBehaviour
     public float sprintSpeed;
     public bool isSprinting = false;
     public bool canMove = true;
+    public float gravity = -20f;
+    public float jumpForce = 10f;
+    private float verticalVelocity = 0f;
     public AudioClip moveSound;
     private AudioSource audioSource;
     bool isMoving = false;
 
+
     void Start()
     {
         // Sätt initial position
+        verticalVelocity = 0f;
         transform.position = new Vector3(startPositionX, startPositionY, startPositionZ);
 
         Cursor.visible = false;
@@ -33,12 +37,36 @@ public class PlayerMove : MonoBehaviour
 
     void Update()
     {
+        // Stoppa spelaren vid marknivå (y=0)
+        if (transform.position.y <= 0f && verticalVelocity < 0f)
+        {
+            Vector3 pos = transform.position;
+            pos.y = 0f;
+            transform.position = pos;
+            verticalVelocity = 0f;
+        }
+        var keyboard = Keyboard.current;
+        var gamepad = Gamepad.current;
+
+        bool jumpPressed = (keyboard != null && keyboard.spaceKey.wasPressedThisFrame) ||
+                           (gamepad != null && gamepad.buttonSouth.wasPressedThisFrame);
+
+        // Enkel hopp/gravitation utan ground check
+        if (jumpPressed && Mathf.Abs(verticalVelocity) < 0.01f) {
+            verticalVelocity = jumpForce;
+        } else {
+            verticalVelocity += gravity * Time.deltaTime;
+        }
+
         if (canMove)
         {
             Vector3 move = HandleInput();
-            isMoving = move.sqrMagnitude > 0.01f;
+            isMoving = new Vector3(move.x, 0, move.z).sqrMagnitude > 0.01f;
             float speed = isSprinting ? sprintSpeed : moveSpeed;
-            transform.Translate(move * speed * Time.deltaTime, Space.World);
+
+            // Flytta på markplanet med hastighet, och lägg till vertikal rörelse separat
+            Vector3 movement = new Vector3(move.x * speed, verticalVelocity, move.z * speed);
+            transform.Translate(movement * Time.deltaTime, Space.World);
 
             // Spela ljud om spelaren rör sig
             if (isMoving && moveSound != null)
@@ -62,8 +90,6 @@ public class PlayerMove : MonoBehaviour
     {
         Vector3 move = Vector3.zero;
 
-        // Tangentbordskontroller
-
         var keyboard = Keyboard.current;
         if (keyboard != null)
         {
@@ -78,23 +104,16 @@ public class PlayerMove : MonoBehaviour
                 move.x += 1f;
         }
 
-
         // Gamepadkontroller
         if (Gamepad.current != null)
-        {   
+        {
             isSprinting = Gamepad.current.buttonWest.isPressed;
             Vector2 moveInput = Gamepad.current.leftStick.ReadValue();
-            if (moveInput.sqrMagnitude > 0.01f && !isSprinting)
+            if (moveInput.sqrMagnitude > 0.01f)
             {
                 move.x += moveInput.x;
                 move.z += moveInput.y;
             }
-            if (moveInput.sqrMagnitude > 0.01f && isSprinting)
-            {
-                move.x += moveInput.x;
-                move.z += moveInput.y;
-            }
-            
         }
 
         // Normalisera rörelsevektorn så att diagonala rörelser inte är snabbare
@@ -104,4 +123,3 @@ public class PlayerMove : MonoBehaviour
         return move;
     }
 }
-#endif
