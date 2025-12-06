@@ -2,6 +2,7 @@
 
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.InputSystem;
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
 
 public class PlayerMove : MonoBehaviour
@@ -9,7 +10,9 @@ public class PlayerMove : MonoBehaviour
     public float startPositionX = 0f;
     public float startPositionY = 0f;
     public float startPositionZ = 0f;
-    public float moveSpeed = 5f;
+    public float moveSpeed;
+    public float sprintSpeed;
+    public bool isSprinting = false;
     public bool canMove = true;
     public AudioClip moveSound;
     private AudioSource audioSource;
@@ -34,8 +37,8 @@ public class PlayerMove : MonoBehaviour
         {
             Vector3 move = HandleInput();
             isMoving = move.sqrMagnitude > 0.01f;
-
-            transform.Translate(move * moveSpeed * Time.deltaTime, Space.World);
+            float speed = isSprinting ? sprintSpeed : moveSpeed;
+            transform.Translate(move * speed * Time.deltaTime, Space.World);
 
             // Spela ljud om spelaren rör sig
             if (isMoving && moveSound != null)
@@ -60,27 +63,38 @@ public class PlayerMove : MonoBehaviour
         Vector3 move = Vector3.zero;
 
         // Tangentbordskontroller
-        if (UnityEngine.InputSystem.Keyboard.current != null)
+
+        var keyboard = Keyboard.current;
+        if (keyboard != null)
         {
-            if (UnityEngine.InputSystem.Keyboard.current.wKey.isPressed)
+            isSprinting = Mouse.current.rightButton.isPressed;
+            if (keyboard.wKey.isPressed)
                 move.z += 1f;
-            if (UnityEngine.InputSystem.Keyboard.current.sKey.isPressed)
+            if (keyboard.sKey.isPressed)
                 move.z -= 1f;
-            if (UnityEngine.InputSystem.Keyboard.current.aKey.isPressed)
+            if (keyboard.aKey.isPressed)
                 move.x -= 1f;
-            if (UnityEngine.InputSystem.Keyboard.current.dKey.isPressed)
+            if (keyboard.dKey.isPressed)
                 move.x += 1f;
         }
 
+
         // Gamepadkontroller
-        if (UnityEngine.InputSystem.Gamepad.current != null)
-        {
-            Vector2 moveInput = UnityEngine.InputSystem.Gamepad.current.leftStick.ReadValue();
-            if (moveInput.sqrMagnitude > 0.01f)
+        if (Gamepad.current != null)
+        {   
+            isSprinting = Gamepad.current.buttonWest.isPressed;
+            Vector2 moveInput = Gamepad.current.leftStick.ReadValue();
+            if (moveInput.sqrMagnitude > 0.01f && !isSprinting)
             {
                 move.x += moveInput.x;
                 move.z += moveInput.y;
             }
+            if (moveInput.sqrMagnitude > 0.01f && isSprinting)
+            {
+                move.x += moveInput.x;
+                move.z += moveInput.y;
+            }
+            
         }
 
         // Normalisera rörelsevektorn så att diagonala rörelser inte är snabbare
