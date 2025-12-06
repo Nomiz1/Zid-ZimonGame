@@ -1,17 +1,14 @@
+// This script handles player movement using keyboard and gamepad input, including movement sound effects.
+
 using JetBrains.Annotations;
 using UnityEngine;
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER // Använd den nya Input System-paketet
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
 
-public class playerMove: MonoBehaviour 
+public class PlayerMove : MonoBehaviour
 {
-    public Vector3 playerPosition;
-    void playerPos()
-        {
-            playerPosition = new Vector3(positionX, positionY, positionZ);
-        }
-    public float positionX = 0f;
-    public float positionY = 0f;
-    public float positionZ = 0f;
+    public float startPositionX = 0f;
+    public float startPositionY = 0f;
+    public float startPositionZ = 0f;
     public float moveSpeed = 5f;
     public bool canMove = true;
     public AudioClip moveSound;
@@ -20,12 +17,10 @@ public class playerMove: MonoBehaviour
 
     void Start()
     {
-        playerPos();
-
-        transform.position = playerPosition; // Sätt initial position
+        // Sätt initial position
+        transform.position = new Vector3(startPositionX, startPositionY, startPositionZ);
 
         Cursor.visible = false;
-
         Cursor.lockState = CursorLockMode.Locked;
 
         audioSource = GetComponent<AudioSource>();
@@ -35,46 +30,12 @@ public class playerMove: MonoBehaviour
 
     void Update()
     {
-
         if (canMove)
         {
-            isMoving = false;
-            // Tangentbordskontroller
-            if (UnityEngine.InputSystem.Keyboard.current != null)
-            {
-                if (UnityEngine.InputSystem.Keyboard.current.wKey.isPressed)
-                {
-                    playerPosition.z += moveSpeed * Time.deltaTime;
-                    isMoving = true;
-                }
-                if (UnityEngine.InputSystem.Keyboard.current.sKey.isPressed)
-                {
-                    playerPosition.z -= moveSpeed * Time.deltaTime;
-                    isMoving = true;
-                }
-                if (UnityEngine.InputSystem.Keyboard.current.aKey.isPressed)
-                {
-                    playerPosition.x -= moveSpeed * Time.deltaTime;
-                    isMoving = true;
-                }
-                if (UnityEngine.InputSystem.Keyboard.current.dKey.isPressed)
-                {
-                    playerPosition.x += moveSpeed * Time.deltaTime;
-                    isMoving = true;
-                }
-            }
-            // Gamepadkontroller
-            if (UnityEngine.InputSystem.Gamepad.current != null)
-            {
-                Vector2 moveInput = UnityEngine.InputSystem.Gamepad.current.leftStick.ReadValue();
-                if (moveInput.sqrMagnitude > 0.01f)
-                {
-                    playerPosition.x += moveInput.x * moveSpeed * Time.deltaTime;
-                    playerPosition.z += moveInput.y * moveSpeed * Time.deltaTime;
-                    isMoving = true;
-                }
-            }
-            transform.position = playerPosition;
+            Vector3 move = HandleInput();
+            isMoving = move.sqrMagnitude > 0.01f;
+
+            transform.Translate(move * moveSpeed * Time.deltaTime, Space.World);
 
             // Spela ljud om spelaren rör sig
             if (isMoving && moveSound != null)
@@ -92,12 +53,41 @@ public class playerMove: MonoBehaviour
                     audioSource.Stop();
             }
         }
-
-       
-
-
-#endif
-        
     }
-       
+
+    Vector3 HandleInput()
+    {
+        Vector3 move = Vector3.zero;
+
+        // Tangentbordskontroller
+        if (UnityEngine.InputSystem.Keyboard.current != null)
+        {
+            if (UnityEngine.InputSystem.Keyboard.current.wKey.isPressed)
+                move.z += 1f;
+            if (UnityEngine.InputSystem.Keyboard.current.sKey.isPressed)
+                move.z -= 1f;
+            if (UnityEngine.InputSystem.Keyboard.current.aKey.isPressed)
+                move.x -= 1f;
+            if (UnityEngine.InputSystem.Keyboard.current.dKey.isPressed)
+                move.x += 1f;
+        }
+
+        // Gamepadkontroller
+        if (UnityEngine.InputSystem.Gamepad.current != null)
+        {
+            Vector2 moveInput = UnityEngine.InputSystem.Gamepad.current.leftStick.ReadValue();
+            if (moveInput.sqrMagnitude > 0.01f)
+            {
+                move.x += moveInput.x;
+                move.z += moveInput.y;
+            }
+        }
+
+        // Normalisera rörelsevektorn så att diagonala rörelser inte är snabbare
+        if (move.magnitude > 1f)
+            move.Normalize();
+
+        return move;
+    }
 }
+#endif

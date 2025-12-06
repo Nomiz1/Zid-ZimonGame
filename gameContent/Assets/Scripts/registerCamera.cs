@@ -1,3 +1,5 @@
+// This script registers and unregisters Cinemachine cameras with the cameraSwitch manager.
+
 using UnityEngine;
 using Unity.Cinemachine;
 

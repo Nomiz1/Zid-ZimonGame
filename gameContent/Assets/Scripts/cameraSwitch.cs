@@ -1,3 +1,5 @@
+// This script manages switching between multiple Cinemachine cameras in a Unity scene.
+
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
